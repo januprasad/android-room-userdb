@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -17,7 +18,8 @@ class SignupFragment : Fragment() {
     private lateinit var viewModel: SignupViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_signup, container, false)
@@ -33,18 +35,42 @@ class SignupFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.signupComplete.observe(this, Observer { isComplete ->
+        viewModel.signupComplete.observe(
+            this,
+            Observer { isComplete ->
+                val action = SignupFragmentDirections.actionGoToMain()
+                Navigation.findNavController(signupUsername).navigate(action)
+            }
+        )
 
-        })
-
-        viewModel.error.observe(this, Observer { error ->
-
-        })
+        viewModel.error.observe(
+            this,
+            Observer { error ->
+                showToast("Error $error")
+            }
+        )
     }
 
-    private fun onSignup(v: View){
-        val action = SignupFragmentDirections.actionGoToMain()
-        Navigation.findNavController(v).navigate(action)
+    private fun onSignup(v: View) {
+        val username = signupUsername.text.toString()
+        val password = signupPassword.text.toString()
+        val info = otherInfo.text.toString()
+        if (username.isEmpty() ||
+            password.isEmpty() ||
+            info.isEmpty()
+        ) {
+            showToast("Please fill")
+        } else {
+            viewModel.signup(username, password, info)
+        }
+    }
+
+    private fun showToast(s: String) {
+        Toast.makeText(
+            activity,
+            s,
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     private fun onGotoLogin(v: View) {
