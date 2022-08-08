@@ -1,6 +1,5 @@
 package com.devtides.coroutinesroom.view
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +18,8 @@ class LoginFragment : Fragment() {
     private lateinit var viewModel: LoginViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_login, container, false)
@@ -36,22 +36,46 @@ class LoginFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.loginComplete.observe(this, Observer { isComplete ->
+        viewModel.loginComplete.observe(
+            this,
+            Observer { isComplete ->
+                loginSuccess()
+            }
+        )
 
-        })
+        viewModel.error.observe(
+            this,
+            Observer { error ->
+            }
+        )
+    }
 
-        viewModel.error.observe(this, Observer { error ->
-
-
-        })
+    private fun loginSuccess() {
+        val action = LoginFragmentDirections.actionGoToMain()
+        Navigation.findNavController(loginUsername).navigate(action)
     }
 
     private fun onLogin(v: View) {
-        val action = LoginFragmentDirections.actionGoToMain()
-        Navigation.findNavController(v).navigate(action)
+        val username = loginUsername.text.toString()
+        val password = loginPassword.text.toString()
+        if (username.isEmpty() ||
+            password.isEmpty()
+        ) {
+            showToast("Please fill")
+        } else {
+            viewModel.login(username, password)
+        }
     }
 
-    private fun onGotoSignup(v: View){
+    private fun showToast(s: String) {
+        Toast.makeText(
+            activity,
+            s,
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun onGotoSignup(v: View) {
         val action = LoginFragmentDirections.actionGoToSignup()
         Navigation.findNavController(v).navigate(action)
     }

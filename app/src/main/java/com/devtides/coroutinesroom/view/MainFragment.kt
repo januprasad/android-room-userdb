@@ -1,6 +1,5 @@
 package com.devtides.coroutinesroom.view
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import com.devtides.coroutinesroom.R
+import com.devtides.coroutinesroom.model.LoginState
 import com.devtides.coroutinesroom.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 
@@ -20,7 +20,8 @@ class MainFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_main, container, false)
@@ -29,6 +30,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        usernameTV.text = LoginState.user?.username
         signoutBtn.setOnClickListener { onSignout() }
         deleteUserBtn.setOnClickListener { onDelete() }
 
@@ -37,12 +39,27 @@ class MainFragment : Fragment() {
     }
 
     fun observeViewModel() {
-        viewModel.signout.observe(this, Observer {
+        viewModel.signout.observe(
+            this,
+            Observer {
+                showToast("Sign out success")
+                signoutScreen()
+            }
+        )
+        viewModel.userDeleted.observe(
+            this,
+            Observer {
+                showToast("Deleted success")
+            }
+        )
+    }
 
-        })
-        viewModel.userDeleted.observe(this, Observer {
-
-        })
+    private fun signoutScreen() {
+        val action =
+            MainFragmentDirections.actionGoToSignup()
+        Navigation.findNavController(usernameTV).navigate(
+            action
+        )
     }
 
     private fun onSignout() {
@@ -50,9 +67,25 @@ class MainFragment : Fragment() {
         Navigation.findNavController(usernameTV).navigate(action)
     }
 
-    private fun onDelete() {
-        val action = MainFragmentDirections.actionGoToSignup()
-        Navigation.findNavController(usernameTV).navigate(action)
+    private fun showToast(s: String) {
+        Toast.makeText(
+            activity,
+            s,
+            Toast.LENGTH_LONG
+        ).show()
     }
 
+    private fun onDelete() {
+        activity?.let {
+            AlertDialog.Builder(it)
+                .setTitle("Delete user")
+                .setMessage("Are you sure, you want to delete this user.?")
+                .setPositiveButton("Yes") { p0,
+                    p1 ->
+                    viewModel.onDeleteUser()
+                }.setNegativeButton("Cancel", null)
+                .create()
+                .show()
+        }
+    }
 }

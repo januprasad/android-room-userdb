@@ -31,10 +31,10 @@ class SignupViewModel(application: Application) : AndroidViewModel(application) 
                 val user = User(username, password.hashCode(), info)
                 val id = db.insertUser(user)
                 LoginState.login(user)
-                withContext(Dispatchers.Main) {
+                withContext(Dispatchers.Main){
                     signupComplete.value = true
-                }
             }
         }
     }
+}
 }
